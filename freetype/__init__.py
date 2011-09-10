@@ -1014,6 +1014,20 @@ class Face( object ):
         if self._FT_Face is not None:
             FT_Done_Face( self._FT_Face )
 
+    def get_format(self):
+        return FT_Get_X11_Font_Format(self._FT_Face)
+
+    def get_fstype(self):
+        flags = {0: "INSTALLABLE_EMBEDDING",
+                 2: "RESTRICTED_LICENSE_EMBEDDING",
+                 4: "PREVIEW_AND_PRINT_EMBEDDING",
+                 8: "EDITABLE_EMBEDDING",
+                 100: "NO_SUBSETTING",
+                 200: "BITMAP_EMBEDDING_ONLY"
+        }
+        flag = FT_Get_FSType_Flags(self._FT_Face)
+        return flags.get(flag, "ERROR")
+
     def set_char_size( self, width=0, height=0, hres=72, vres=72 ):
         '''
         This function calls FT_Request_Size to request the nominal size (in
