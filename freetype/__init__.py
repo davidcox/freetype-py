@@ -25,6 +25,9 @@ from ft_enums import *
 from ft_errors import *
 from ft_structs import *
 import ctypes.util
+import os
+
+PACKAGE_FOLDER = os.path.abspath(os.path.dirname(__file__))
 
 
 __dll__    = None
@@ -33,12 +36,13 @@ FT_Library_filename = ctypes.util.find_library('freetype')
 
 if not FT_Library_filename:
     
-    paths_to_try = [ 'libfreetype.so.6',  # Linux
-                     '/usr/X11/lib/libfreetype.dylib' # MacOS X
+    paths_to_try = [ os.path.join(PACKAGE_FOLDER, 'libfreetype.dll'), # Windows
+                     'libfreetype.so.6',  # Linux
+                     '/usr/X11/lib/libfreetype.dylib', # MacOS X
                    ]
     for p in paths_to_try:
         try:
-            __dll__ = ctypes.CDLL(p)
+            __dll__ = CDLL(p)
         except OSError:
             pass
             
@@ -47,7 +51,7 @@ if not FT_Library_filename:
 if not FT_Library_filename and not __dll__:
     raise RuntimeError, 'Freetype library not found'
 if not __dll__:
-    __dll__ = ctypes.CDLL(FT_Library_filename)
+    __dll__ = CDLL(FT_Library_filename)
 
 
 
