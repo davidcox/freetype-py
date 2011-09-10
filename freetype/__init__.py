@@ -100,6 +100,8 @@ def version():
     FT_Library_Version(library, byref(amajor), byref(aminor), byref(apatch))
     return (amajor.value, aminor.value, apatch.value)
 
+FT_Get_X11_Font_Format = __dll__.FT_Get_X11_Font_Format
+FT_Get_X11_Font_Format.restype = c_char_p
 
 FT_Library_SetLcdFilter= __dll__.FT_Library_SetLcdFilter
 if version()>=(2,4,0):
@@ -142,6 +144,7 @@ FT_Get_Name_Index      = __dll__.FT_Get_Name_Index
 FT_Get_SubGlyph_Info   = __dll__.FT_Get_SubGlyph_Info
 if version()>=(2,3,8):
     FT_Get_FSType_Flags    = __dll__.FT_Get_FSType_Flags
+    FT_Get_FSType_Flags.restype  = c_ushort
 FT_Get_Sfnt_Name_Count = __dll__.FT_Get_Sfnt_Name_Count
 FT_Get_Sfnt_Name       = __dll__.FT_Get_Sfnt_Name
 
