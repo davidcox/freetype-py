@@ -25,6 +25,9 @@ from ft_enums import *
 from ft_errors import *
 from ft_structs import *
 import ctypes.util
+import os
+
+PACKAGE_FOLDER = os.path.abspath(os.path.dirname(__file__))
 
 
 __dll__    = None
@@ -33,12 +36,13 @@ FT_Library_filename = ctypes.util.find_library('freetype')
 
 if not FT_Library_filename:
     
-    paths_to_try = [ 'libfreetype.so.6',  # Linux
-                     '/usr/X11/lib/libfreetype.dylib' # MacOS X
+    paths_to_try = [ os.path.join(PACKAGE_FOLDER, 'libfreetype.dll'), # Windows
+                     'libfreetype.so.6',  # Linux
+                     '/usr/X11/lib/libfreetype.dylib', # MacOS X
                    ]
     for p in paths_to_try:
         try:
-            __dll__ = ctypes.CDLL(p)
+            __dll__ = CDLL(p)
         except OSError:
             pass
             
@@ -47,7 +51,7 @@ if not FT_Library_filename:
 if not FT_Library_filename and not __dll__:
     raise RuntimeError, 'Freetype library not found'
 if not __dll__:
-    __dll__ = ctypes.CDLL(FT_Library_filename)
+    __dll__ = CDLL(FT_Library_filename)
 
 
 
@@ -96,6 +100,8 @@ def version():
     FT_Library_Version(library, byref(amajor), byref(aminor), byref(apatch))
     return (amajor.value, aminor.value, apatch.value)
 
+FT_Get_X11_Font_Format = __dll__.FT_Get_X11_Font_Format
+FT_Get_X11_Font_Format.restype = c_char_p
 
 FT_Library_SetLcdFilter= __dll__.FT_Library_SetLcdFilter
 if version()>=(2,4,0):
@@ -138,6 +144,7 @@ FT_Get_Name_Index      = __dll__.FT_Get_Name_Index
 FT_Get_SubGlyph_Info   = __dll__.FT_Get_SubGlyph_Info
 if version()>=(2,3,8):
     FT_Get_FSType_Flags    = __dll__.FT_Get_FSType_Flags
+    FT_Get_FSType_Flags.restype  = c_ushort
 FT_Get_Sfnt_Name_Count = __dll__.FT_Get_Sfnt_Name_Count
 FT_Get_Sfnt_Name       = __dll__.FT_Get_Sfnt_Name
 
@@ -1006,6 +1013,20 @@ class Face( object ):
         '''
         if self._FT_Face is not None:
             FT_Done_Face( self._FT_Face )
+
+    def get_format(self):
+        return FT_Get_X11_Font_Format(self._FT_Face)
+
+    def get_fstype(self):
+        flags = {0: "INSTALLABLE_EMBEDDING",
+                 2: "RESTRICTED_LICENSE_EMBEDDING",
+                 4: "PREVIEW_AND_PRINT_EMBEDDING",
+                 8: "EDITABLE_EMBEDDING",
+                 100: "NO_SUBSETTING",
+                 200: "BITMAP_EMBEDDING_ONLY"
+        }
+        flag = FT_Get_FSType_Flags(self._FT_Face)
+        return flags.get(flag, "ERROR")
 
     def set_char_size( self, width=0, height=0, hres=72, vres=72 ):
         '''
